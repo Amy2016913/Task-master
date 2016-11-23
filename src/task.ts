@@ -1,8 +1,9 @@
 interface Observer {
-     onChange(task:Task);
-
+     onChange(task:TaskConditionContext);
 }
-class TaskThePanel extends egret.DisplayObjectContainer implements Observer{ 
+
+
+class TaskPanel extends egret.DisplayObjectContainer implements Observer{ 
     myphoto:egret.Bitmap;
     textField:egret.TextField[]=[];
     cancelButton:egret.Bitmap;
@@ -11,63 +12,63 @@ class TaskThePanel extends egret.DisplayObjectContainer implements Observer{
     stageW=640;
     constructor(){
         super();
-        this.myphoto=this.createTheBitmapByName("任务panel_png");
-        this.cancelButton=this.createTheBitmapByName("取消_png");
+        this.myphoto=this.createBitmapByName("任务panel_png");
+        this.cancelButton=this.createBitmapByName("取消_png");
         this.cancelButton.touchEnabled=true;
         this.addChild(this.myphoto);
         this.addChild(this.cancelButton);
         this.cancelButton.x=this.cancelButton.width;
         this.cancelButton.y=this.cancelButton.height;
-        this.cancelButton.addEventListener(egret.TouchEvent.TOUCH_TAP,this.IfonButtonClick,this);
+        this.cancelButton.addEventListener(egret.TouchEvent.TOUCH_TAP,this.onButtonClick,this);
 
     }
     onChange(task:Task) {
         if(task.status>=2&&task.status<4){
-            var m=0;
-            for(let j=0;j<this.nowtaskList.length;j++){
-                if(task.id==this.nowtaskList[j].id){
-                    this.nowtaskList.splice(j,1,task);
-                    m++;
+            var k=0;
+            for(let i=0;i<this.nowtaskList.length;i++){
+                if(task.id==this.nowtaskList[i].id){
+                    this.nowtaskList.splice(i,1,task);
+                    k++;
                 }
             }
-            if(m==0){
+            if(k==0){
                 this.nowtaskList.push(task);
             }
 
         }if(task.status==4){
-            for(let j=0;j<this.nowtaskList.length;j++){
-                if(task.id==this.nowtaskList[j].id){
-                    this.nowtaskList.splice(j,1);
+            for(let i=0;i<this.nowtaskList.length;i++){
+                if(task.id==this.nowtaskList[i].id){
+                    this.nowtaskList.splice(i,1);
                     
                 }
             }
         }
 
     }
-    IfonButtonClick() {
-        this.IfonClose();
+    onButtonClick() {
+        this.onClose();
     }
-    IfonShow() {
-        var s=0;
-        for(s;s<this.nowtaskList.length&&this.nowtaskList.length!=0;s++){
+    onShow() {
+        var i=0;
+        for(i;i<this.nowtaskList.length&&this.nowtaskList.length!=0;i++){
             var tx=new egret.TextField();
             this.textField.push(tx);
-            this.textField[s].text=this.nowtaskList[s].name+"  "+this.nowtaskList[s].desc;
-            this.addChild(this.textField[s]);
-            this.textField[s].x=50;
-            this.textField[s].y=100+100*s;
+            this.textField[i].text=this.nowtaskList[i].name+"  "+this.nowtaskList[i].desc+" "+this.nowtaskList[i].howso();
+            this.addChild(this.textField[i]);
+            this.textField[i].x=50;
+            this.textField[i].y=100+100*i;
         }
         
         
     }
-    IfonClose() {
+    onClose() {
         for(let i=0;i<this.textField.length;i++){
             this.removeChild(this.textField[i]);
         }
         this.textField.splice(0,this.textField.length);
         this.parent.removeChild(this);
     }
-     private createTheBitmapByName(name:string):egret.Bitmap {
+     private createBitmapByName(name:string):egret.Bitmap {
         var result = new egret.Bitmap();
         var texture:egret.Texture = RES.getRes(name);
         result.texture = texture;
@@ -75,105 +76,101 @@ class TaskThePanel extends egret.DisplayObjectContainer implements Observer{
     }
 }
 
-class NPCwrodPanel extends egret.DisplayObjectContainer{ 
-    count:number=0;
-    textNPC:egret.TextField=new egret.TextField();
-    npcname:string;
-    textField:egret.TextField=new egret.TextField();;
-    myphoto:egret.Bitmap;
-    button:egret.Bitmap;
+class DialoguePanel extends egret.DisplayObjectContainer{ 
+    isPanelShow:boolean;
+    NPCName:egret.TextField=new egret.TextField();
+    textField:egret.TextField=new egret.TextField();
+    photo:egret.Bitmap;
     stageH=1136;
     stageW=640;
-    buttonShow=0;
+    taskstatus=0;
     taskid:string;
     acceptButton:egret.Bitmap;
     cancelButton:egret.Bitmap;
     finishButton:egret.Bitmap;
     constructor(){
         super();
-        this.myphoto=this.createTheBitmapByName("对话框_png");
+        this.isPanelShow=false;
+        this.photo=this.createBitmapByName("对话框_png");
         this.x=0;
-        this.y=this.stageH-this.myphoto.height;
-        this.acceptButton=this.createTheBitmapByName("接受_png");
-        this.cancelButton=this.createTheBitmapByName("取消_png");
-        this.finishButton=this.createTheBitmapByName("完成_png");
+        this.y=this.stageH-this.photo.height;
+        this.acceptButton=this.createBitmapByName("接受_png");
+        this.cancelButton=this.createBitmapByName("取消_png");
+        this.finishButton=this.createBitmapByName("完成_png");
         this.acceptButton.x=this.finishButton.x=this.stageW-this.acceptButton.width*3-this.x;
         this.acceptButton.y=this.finishButton.y=this.stageH-this.acceptButton.height*2-this.y;
         this.cancelButton.x=this.stageW-this.acceptButton.width*1.5-this.x;
         this.cancelButton.y=this.stageH-this.acceptButton.height*2-this.y;
-        this.textNPC.x=30;
-        this.textNPC.y=50;
+        this.NPCName.x=30;
+        this.NPCName.y=50;
         this.textField.x=30;
         this.textField.y=100;
         this.textField.text="";
-        this.addChild(this.myphoto);
-        this.addChild(this.textNPC);     
+        this.addChild(this.photo);
+        this.addChild(this.NPCName);     
         this.addChild(this.textField); 
         this.addChild(this.cancelButton);
-        this.cancelButton.addEventListener(egret.TouchEvent.TOUCH_TAP,this.Ifonclose,this);
-        this.acceptButton.addEventListener(egret.TouchEvent.TOUCH_TAP,this.IfonButtonClick,this);
-        this.finishButton.addEventListener(egret.TouchEvent.TOUCH_TAP,this.IfonButtonClick,this);
+        this.cancelButton.addEventListener(egret.TouchEvent.TOUCH_TAP,this.Close,this);
+        this.acceptButton.addEventListener(egret.TouchEvent.TOUCH_TAP,this.onButtonClick,this);
+        this.finishButton.addEventListener(egret.TouchEvent.TOUCH_TAP,this.onButtonClick,this);
 
 
     }
-    public IfonShow() {
-        this.count++;  
-        this.textNPC.text=this.npcname;
-        this.cancelButton.touchEnabled=true;       
-    }
-    public Ifonclose() {
-        if(this.count!=0) {
-             if(this.buttonShow==1){
+ 
+    public Close() {
+      
+             if(this.taskstatus==1){
               this.removeChild(this.acceptButton);
-              this.buttonShow=0;
+              this.taskstatus=0;
                this.acceptButton.touchEnabled=false;
           }
-           if(this.buttonShow==2){
+           if(this.taskstatus==3){
               this.removeChild(this.finishButton);
-              this.buttonShow=0;
+              this.taskstatus=0;
               this.finishButton.touchEnabled=false;
           }
           this.parent.removeChild(this);
-          this.count=0;
-          this.npcname="";
+          this.isPanelShow=false;
+          this.NPCName.text="";
           this.textField.text="";
           this.cancelButton.touchEnabled=false;
-         
-        }
+        
     }
-    public IfshowMyTask(task:Task){
+    public showTask(task:Task){
+         if( this.isPanelShow==true ) {
+              this.Close();
+          }
         this.taskid=task.id;
         this.textField.text=task.desc;
-      
+        this.isPanelShow=true;  
+        this.cancelButton.touchEnabled=true;   
+        this.finishButton.touchEnabled=true;  
+        this.acceptButton.touchEnabled=true;  
         if(task.status==1) {
             this.addChild(this.acceptButton);
-            this.buttonShow=1;
-            this.acceptButton.touchEnabled=true;
-      
+            this.taskstatus=1;
         }
         if(task.status==3) {
             this.addChild(this.finishButton);
-            this.buttonShow=2;
-            this.finishButton.touchEnabled=true;
+            this.taskstatus=3;
         }
+ 
     }
-    IfonButtonClick() {
-       
-        if(this.buttonShow==1){
-            var tas:TaskTheService=TaskTheService.getInstance();
+    onButtonClick() {
+        if(this.taskstatus==1){
+            var tas:TaskService=TaskService.getMyInstance();
             tas.accept(this.taskid);
-            if(this.taskid==tasks[1].id){
-                tas.reach(this.taskid);
-            }
+          
+            
         }
-        if(this.buttonShow==2){
-            var tas:TaskTheService=TaskTheService.getInstance();
+        if(this.taskstatus==3){
+            var tas:TaskService=TaskService.getMyInstance();
             tas.finish(this.taskid);
         }
-        this.Ifonclose();
+        this.Close();
 
     }
-    private createTheBitmapByName(name:string):egret.Bitmap {
+    private createBitmapByName(name:string):egret.Bitmap {
         var result = new egret.Bitmap();
         var texture:egret.Texture = RES.getRes(name);
         result.texture = texture;
@@ -181,9 +178,59 @@ class NPCwrodPanel extends egret.DisplayObjectContainer{
     }
 }
 
+class TaskCondition {
+    total:number=-100;
+    onAccept(Task){}
+    onsubmit(Task){}
+    onChange(taCC:TaskConditionContext){
+    }
+}
+
+class NPCTalkTaskCondition extends TaskCondition {
+
+    total:number=0;
+    onAccept(Task){}
+    onsubmit(Task){}
+
+    onChange(taCC:TaskConditionContext){
+        var cur=taCC.getcurrent();
+        cur++;
+        taCC.setcurrent(cur);
+    }
+}
 
 
-class Task {
+class KillMonsterTaskCondition extends TaskCondition implements Observer {
+
+   
+    total:number=0;
+    constructor(total:number) {
+        super();
+        this.total=total;
+    }
+
+    onAccept(task:Task) {
+
+    }
+    onsubmit(task:Task) {
+
+    }
+
+    onChange(taCC:TaskConditionContext){
+
+        var cur=taCC.getcurrent();
+        cur++;
+        taCC.setcurrent(cur);
+    }
+}
+
+interface TaskConditionContext {
+    getcurrent();
+    setcurrent(number);
+}
+
+
+class Task implements TaskConditionContext{
  id:string;
  name:string;
  desc:string;
@@ -191,8 +238,13 @@ class Task {
  fromNPCid:string;
  toNPCid:string;
 
+ current:number=0;
+ total:number=-1;
+ taskCondition:TaskCondition;
 
-constructor(id,name,desc,status,fromNPCid,toNPCid) {
+ nextTaskid:string;
+
+constructor(id,name,desc,status,fromNPCid,toNPCid,condition,neTaId) {
     this.id=id;
     this.desc=desc;
     this.name=name;
@@ -200,43 +252,93 @@ constructor(id,name,desc,status,fromNPCid,toNPCid) {
     this.status=status;
     this.fromNPCid=fromNPCid;
     this.toNPCid=toNPCid;
-}
+    this.taskCondition=condition;
+    this.total=this.taskCondition.total;
+    this.nextTaskid=neTaId;
 
 }
+    getcurrent():number{
+        return this.current;
+    }
+    setcurrent(newcurreny:number){
+        this.current=newcurreny;
+        this.checkStatus();
+    }
+     onCanAccept() {
+        this.status=1;
+        var tasS:TaskService=TaskService.getMyInstance();
+        tasS.notify(this);
+     
+    }
 
-enum TaskStatus {
-    UNACCEPTABLE=0,
-    ACCEPTABLE=1,
-    DURING=2,
-    CAN_SUBMIT=3,
-    SUBMITTED=4,
+    onAccept() {
+        this.status=2;
+        var tasS:TaskService=TaskService.getMyInstance();
+        tasS.notify(this);
+        this.checkStatus();
+    }
+    onReach() {
+        this.status=3;
+        var tasS:TaskService=TaskService.getMyInstance();
+        tasS.notify(this);
+    }
+
+    onFinish(){
+        this.status=4;
+        var tasS:TaskService=TaskService.getMyInstance();
+        tasS.notify(this);
+        if(this.nextTaskid!=null) {
+            tasS.canAccept(this.nextTaskid);
+        }
+
+    }
+
+    checkStatus() {
+        if(this.current>=this.total){
+            this.onReach();
+        }
+    }
+    getMyCondition() {
+        return this.taskCondition;
+    }
+    howso():string{
+        
+        var so="("+this.current+"/"+this.total+")";
+        if(this.total<=0) {
+            so="";
+        }
+
+
+        return so;
+    }
 }
+
 
 class NPC extends egret.DisplayObjectContainer implements Observer {
     id:string;
-    myname:string;
+    name:string;
     emoji:egret.Bitmap;
-    myphoto:egret.Bitmap;
-    myword:string;
-    myPanel:NPCwrodPanel;
-    constructor(i:number,npcwp:NPCwrodPanel) {
+    photo:egret.Bitmap;
+    wrod:string;
+    panel:DialoguePanel;
+    constructor(i:number,dp:DialoguePanel) {
         super();
         this.id=NPCs[i].id;
-        this.myname=NPCs[i].myname;
-        this.myphoto=this.createTheBitmapByName(NPCs[i].myphoto);
-        this.addChild(this.myphoto);
-        this.emoji=this.createTheBitmapByName(emojis[0].name);
+        this.name=NPCs[i].name;
+        this.photo=this.createBitmapByName(NPCs[i].photo);
+        this.addChild(this.photo);
+        this.emoji=this.createBitmapByName(emojis[0].name);
         this.addChild(this.emoji);
-        this.emoji.x+=this.myphoto.width/5;
-        this.emoji.y-=this.myphoto.height/4;
-        this.myPanel=npcwp;
-        this.myword="点我干嘛快去搞任务啊";
+        this.emoji.x+=this.photo.width/5;
+        this.emoji.y-=this.photo.height/4;
+        this.panel=dp;
+        this.wrod=NPCs[i].wrod;
     }
     onChange(task:Task) {
       if(task.fromNPCid==this.id) {
           if(task.status==1)
          this.emoji.texture=RES.getRes(emojis[1].name);   
-         if(task.status==2)   
+         if(task.status>=2)   
           this.emoji.texture=RES.getRes(emojis[0].name);   
        }
        if(task.toNPCid==this.id&&task.status>1) {
@@ -251,39 +353,39 @@ class NPC extends egret.DisplayObjectContainer implements Observer {
        }
     }
 
-    IfonNPCClick() {
-        this.myPanel.npcname=this.myname;
-        var tas:TaskTheService=TaskTheService.getInstance();
-        var ta=tas.getTheTaskBYCustomRule(this.rules1,this);
-        if(ta!=null){
-   //         console.log(ta.id);
-            this.myPanel.IfshowMyTask(ta);
-        }
-     
-    }
+    onNPCClick() {
 
-    public rules1(tasks:Task[],npc:NPC) {
-        var ta:Task;
-        for(let i=0;i<tasks.length;i++) {
-      //      console.log(tasks[i].id+""+tasks[i].toNPCid);
-             if(tasks[i].toNPCid==npc.id) {
-                if(tasks[i].status!=0&&tasks[i].status!=4&&tasks[i].status!=1){
-                         ta=tasks[i];       
-                         return ta;         
+        var ruleOne:Function=(tasklist):Task => {
+        var task:Task;
+        for(let i=0;i<tasklist.length;i++) {
+             if(tasklist[i].toNPCid==this.id) {
+                if(tasklist[i].status==2||tasklist[i].status==3){
+                         task=tasklist[i];       
+                         return task;         
             } 
              }
-            if(tasks[i].fromNPCid==npc.id) {
-                if(tasks[i].status==1){
-                         ta=tasks[i];  
-                             return ta;                      
+            if(tasklist[i].fromNPCid==this.id) {
+                if(tasklist[i].status==1){
+                         task=tasklist[i];  
+                             return task;                      
                         }
             }
-               
         }return null;  
+
     }
-  
-    
-    private createTheBitmapByName(name:string):egret.Bitmap {
+        this.panel.NPCName.text=this.name;
+        var taskService:TaskService=TaskService.getMyInstance();
+        var task=taskService.getTaskBYCustomRule(ruleOne);
+      
+        if(task!=null){
+             this.panel.showTask(task);
+        }else  {
+            this.panel.cancelButton.touchEnabled=true;
+            this.panel.textField.text=this.wrod;
+        }
+    }
+
+    private createBitmapByName(name:string):egret.Bitmap {
         var result = new egret.Bitmap();
         var texture:egret.Texture = RES.getRes(name);
         result.texture = texture;
@@ -291,100 +393,114 @@ class NPC extends egret.DisplayObjectContainer implements Observer {
     }
 
 }
+/*fail
+interface  EventEmitter {
 
+//    addObserver();
+    notify();
 
-class TaskTheService {
+}
+*/
+
+class TaskService {
 
     public observerList:Observer[]=[];
     public taskList:Task[]=[];
     private static instance;
     private static count =0;
     constructor (){
-        TaskTheService.count++;
-        if(TaskTheService.count >1){
+     
+        TaskService.count++;
+        if(TaskService.count >1){
             throw 'singleton';
         }
+
     }
-    public static getInstance() {
-        if(TaskTheService.instance ==null) {
-            TaskTheService.instance =new TaskTheService();
+    public static getMyInstance() {
+        if(TaskService.instance ==null) {
+            TaskService.instance =new TaskService();
         }
-        return TaskTheService.instance;
+        return TaskService.instance;
     }
 
     finish (id:String) {
         for(let ta of this.taskList) {
             if(ta.id==id) {
-                ta.status=TaskStatus.SUBMITTED;
-                this.notify(ta);
-                this.notifyall();
-            }
-        }
-    }
-    reach (id:String) {
-        for(let ta of this.taskList) {
-            if(ta.id==id) {
-                ta.status=TaskStatus.CAN_SUBMIT;
-                this.notify(ta);
-            }
-        }
-    }
-     IfcanAccept (id:String) {
-        for(let ta of this.taskList) {
-            if(ta.id==id) {
-                ta.status=TaskStatus.ACCEPTABLE;
-                this.notify(ta);
+                ta.onFinish();
             }
         }
     }
     accept (id:String) {
-         for(let ta of this.taskList) {
-            if(ta.id==id) {
-                ta.status=TaskStatus.DURING;
-                this.notify(ta);
+         for(let task of this.taskList) {
+            if(task.id==id) {
+                task.onAccept();
             }
         }
 
     }
-    public getTheTaskBYCustomRule(rule:Function,npc:NPC):Task{
-           
-            return  rule(this.taskList,npc);
+    canAccept (id:String) {
+         for(let task of this.taskList) {
+            if(task.id==id) {
+                task.onCanAccept();
+            }
+        }
+
     }
+   
+    public getTaskBYCustomRule(rule:Function):Task{
+            return  rule(this.taskList);
+    }
+
     notify(ta:Task) {
         for(let ob of this.observerList) {
             ob.onChange(ta);
         }
-  //      console.log(ta.id,ta.desc,ta.name);
     }
-    notifyall(){
-      
-         for(let ob of this.observerList){
-           for(let ta of this.taskList) {
+
+}
+
+class SenService {
+
+    public observerList:Observer[]=[];
+
+    notify(ta:Task) {
+        for(let ob of this.observerList) {
             ob.onChange(ta);
-            if(ta.id==tasks[0].id&&ta.status==4){
-                for(var ta2 of this.taskList) {
-                    if(ta2.id==tasks[1].id&&ta2.status==0){
-                        ta2.status=TaskStatus.ACCEPTABLE;
-                        console.log("gai");
-                        this.notify(ta2);
-                    }
-                }
-                    
-            }
-         }}
-         
+        }
     }
+
+}
+class MonsterKillButton extends egret.DisplayObjectContainer{
+    photo:egret.Bitmap;
+    mySS:SenService;
+
+    onButtonClick(ta:Task) {
+        console.log("经验+1");
+        if(ta.status==2){
+            this.mySS.notify(ta);
+        }
+      
+    }
+
 }
 
 
-let tasks= [
-    {id:"task_00",name:"no乱点",desc:"请跟右边",fromNPCid:"npc_0",toNPCid:"npc_0"},
-    {id:"task_01",name:"来了",desc:"去左边",fromNPCid:"npc_1",toNPCid:"npc_0"},
+enum TaskStatus {
+    UNACCEPTABLE=0,
+    ACCEPTABLE=1,
+    DURING=2,
+    CAN_SUBMIT=3,
+    SUBMITTED=4,
+}
+
+let Tasks= [
+    {id:"task_00",name:"瞎**乱点",desc:"请跟右边的小女孩对话",status:1,fromNPCid:"npc_0",toNPCid:"npc_1",condition:new NPCTalkTaskCondition(),nexttaskid:"task_01"},
+    {id:"task_01",name:"使劲点，点！",desc:"请点击小怪物",status:0,fromNPCid:"npc_1",toNPCid:"npc_1",condition:new KillMonsterTaskCondition(10),nexttaskid:null},
 ]
 
 let NPCs=[
-    {id:"npc_0",myname:"不送",myphoto:"npc0_01_png"},
-    {id:"npc_1",myname:"真的",myphoto:"npc1__01_png"},
+    {id:"npc_0",name:"不送",wrod:"好吗？",photo:"npc0_01_png"},
+    {id:"npc_1",name:"真的",wrod:"骚扰哦",photo:"npc1__01_png"},
 ]
 
 let emojis=[

@@ -31,12 +31,12 @@ class LoadingUI extends egret.Sprite {
 
     public constructor() {
         super();
-        this.IfcreateView();
+        this.createMyloveView();
     }
 
     private textField:egret.TextField;
 
-    private IfcreateView():void {
+    private createMyloveView():void {
         this.textField = new egret.TextField();
         this.addChild(this.textField);
         this.textField.y = 300;
@@ -45,7 +45,8 @@ class LoadingUI extends egret.Sprite {
         this.textField.textAlign = "center";
     }
 
-    public IfsetProgress(current, total):void {
-        this.textField.text = "Loading..." + current + "/" + total;
+    public PleasesetProgress(current, total):void {
+        this.textField.text = "Loading your data..." + current + "/" + total;
     }
 }
+

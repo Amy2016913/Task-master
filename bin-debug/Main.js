@@ -100,33 +100,27 @@ var Main = (function (_super) {
      * 创建游戏场景
      * Create a game scene
      */
-    p.createBitmapByName = function (name) {
-        var result = new egret.Bitmap();
-        var texture = RES.getRes(name);
-        result.texture = texture;
-        return result;
-    };
     p.createGameScene = function () {
         var sky = this.createBitmapByName("bgImage");
-        this.addChild(sky);
+        // this.addChild(sky);
         var stageW = this.stage.stageWidth;
         var stageH = this.stage.stageHeight;
         sky.width = stageW;
         sky.height = stageH;
-        var Taskser = TaskService.getInstance();
-        this.run(Taskser);
+        this.Addtask();
     };
-    p.run = function (tasker) {
+    p.Addtask = function () {
         var _this = this;
-        var npcwrodPanel = new NPCwrodPanel();
-        var npc_0 = new NPC(0, npcwrodPanel);
-        var npc_1 = new NPC(1, npcwrodPanel);
+        var taskser = TaskService.getInstance();
+        var dp = new DialoguePanel();
+        var npc_0 = new NPC(0, dp);
+        var npc_1 = new NPC(1, dp);
         var taskPanel = new TaskPanel();
         var TaskButton = this.createBitmapByName("人物摁扭_png");
         TaskButton.x = this.stage.stageWidth - TaskButton.width;
         TaskButton.y = 0;
-        var task0 = new Task(tasks[0].id, tasks[0].name, tasks[0].desc, TaskStatus.ACCEPTABLE, tasks[0].fromNPCid, tasks[0].toNPCid);
-        var task1 = new Task(tasks[1].id, tasks[1].name, tasks[1].desc, TaskStatus.UNACCEPTABLE, tasks[1].fromNPCid, tasks[1].toNPCid);
+        var task0 = new Task(Tasks[0].id, Tasks[0].name, Tasks[0].desc, TaskStatus.ACCEPTABLE, Tasks[0].fromNPCid, Tasks[0].toNPCid, Tasks[0].condition, Tasks[0].nexttaskid);
+        var task1 = new Task(Tasks[1].id, Tasks[1].name, Tasks[1].desc, TaskStatus.UNACCEPTABLE, Tasks[1].fromNPCid, Tasks[1].toNPCid, Tasks[1].condition, Tasks[1].nexttaskid);
         this.addChild(npc_0);
         this.addChild(npc_1);
         this.addChild(TaskButton);
@@ -134,39 +128,50 @@ var Main = (function (_super) {
         npc_0.y = 133;
         npc_1.x = 326;
         npc_1.y = 333;
-        tasker.observerList.push(taskPanel);
-        tasker.observerList.push(npc_0);
-        tasker.observerList.push(npc_1);
-        tasker.taskList.push(task0);
-        tasker.taskList.push(task1);
+        taskser.observerList.push(taskPanel);
+        taskser.observerList.push(npc_0);
+        taskser.observerList.push(npc_1);
+        taskser.taskList.push(task0);
+        taskser.taskList.push(task1);
         TaskButton.touchEnabled = true;
         npc_0.touchEnabled = true;
         npc_1.touchEnabled = true;
-        npc_0.addEventListener(egret.TouchEvent.TOUCH_TAP, function () { _this.NPCisClick(npc_0, npcwrodPanel); }, this);
+        npc_0.addEventListener(egret.TouchEvent.TOUCH_TAP, function () { _this.NPCisClick(npc_0, dp); }, this);
         TaskButton.addEventListener(egret.TouchEvent.TOUCH_TAP, function () { return (_this.showTaskPanel(taskPanel)); }, this);
-        npc_1.addEventListener(egret.TouchEvent.TOUCH_TAP, function () {
-            _this.NPCisClick(npc_1, npcwrodPanel);
-            if (task0.status == 2) {
-                tasker.reach(task0.id);
-            }
-        }, this);
-        tasker.notifyall();
+        npc_1.addEventListener(egret.TouchEvent.TOUCH_TAP, function () { _this.NPCisClick(npc_1, dp); }, this);
+        taskser.notify(taskser.taskList[0]);
+        var MB = new MonsterKillButton();
+        MB.photo = this.createBitmapByName("egretIcon");
+        var SS = new SenService();
+        var m = task1.getMyCondition();
+        SS.observerList.push(m);
+        MB.mySS = (SS);
+        this.addChild(MB);
+        MB.addChild(MB.photo);
+        MB.x = 0;
+        MB.y = this.stage.height - MB.photo.height;
+        MB.addEventListener(egret.TouchEvent.TOUCH_TAP, function () { MB.onButtonClick(task1); }, this);
+        MB.touchEnabled = true;
     };
     p.showTaskPanel = function (taskPanel) {
         this.addChild(taskPanel);
         taskPanel.onShow();
     };
-    p.NPCisClick = function (npc, npcwp) {
-        npcwp.onclose();
+    p.NPCisClick = function (npc, dp) {
         npc.onNPCClick();
-        this.addChild(npcwp);
-        npcwp.onShow();
+        this.addChild(dp);
+    };
+    /**
+     * 根据name关键字创建一个Bitmap对象。name属性请参考resources/resource.json配置文件的内容。
+     * Create a Bitmap object according to name keyword.As for the property of name please refer to the configuration file of resources/resource.json.
+     */
+    p.createBitmapByName = function (name) {
+        var result = new egret.Bitmap();
+        var texture = RES.getRes(name);
+        result.texture = texture;
+        return result;
     };
     return Main;
 }(egret.DisplayObjectContainer));
 egret.registerClass(Main,'Main');
-/**
- * 根据name关键字创建一个Bitmap对象。name属性请参考resources/resource.json配置文件的内容。
- * Create a Bitmap object according to name keyword.As for the property of name please refer to the configuration file of resources/resource.json.
- */
 //# sourceMappingURL=Main.js.map
